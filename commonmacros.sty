@@ -1,0 +1,35 @@
+\ProvidesPackage{commonmacros}[Common mathematical and physics macros]
+
+%% hermitian/complex conjugate
+\newcommand{\cc}{\ensuremath{\mathrm{c.c.}}}
+\newcommand{\hc}{\ensuremath{\mathrm{h.c.}}}
+
+%% eulers number, and imag
+\newcommand{\eu}{\ensuremath{\operatorname{e}}}
+\newcommand{\iu}{\ensuremath{\mathrm{i}\mkern1mu}}
+\def\i{\iu}
+
+%% identity operator and standard sets
+\def\id{\ensuremath{\mathbb{1}}}
+\def\NN{\ensuremath{\mathbb{N}}}
+\def\RR{\ensuremath{\mathbb{R}}}
+\def\CC{\ensuremath{\mathbb{C}}}
+\def\ZZ{\ensuremath{\mathbb{Z}}}
+
+%% operators and dimensions
+\def\dim{\ensuremath{\operatorname{dim}}}
+\def\hilb{\ensuremath{\mathcal{H}}}
+
+%% Im Re
+\renewcommand{\Re}{\operatorname{Re}}
+\renewcommand{\Im}{\operatorname{Im}}
+
+%% Dirac Comb (Sha)
+\DeclareFontFamily{U}{wncy}{}
+\DeclareFontShape{U}{wncy}{m}{n}{<->wncyr10}{}
+\DeclareSymbolFont{mcy}{U}{wncy}{m}{n}
+\DeclareMathSymbol{\Sh}{\mathord}{mcy}{"58}
+
+%% general operators safely defined to avoid conflicts with packages like physics
+\providecommand{\sinc}{\operatorname{sinc}}
+\providecommand{\sign}{\operatorname{sign}}

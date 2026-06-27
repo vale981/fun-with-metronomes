@@ -1,0 +1,19 @@
+# LaTeX temporary and output files
+output/
+output_tmp/
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.pdf
+*.run.xml
+*.synctex.gz
+*.toc
+*.fmt
+*.hdr
+.direnv/
+.cache/
+result

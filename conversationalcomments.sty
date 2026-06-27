@@ -1,0 +1,921 @@
+%%
+%% This is file `conversationalcomments.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% conversationalcomments.dtx  (with options: `package')
+%% This is a generated file.
+%% 
+%% Copyright (C) 2026 by Valentin Boettcher
+%% 
+%% This file may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in:
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{conversationalcomments}
+  [2026/06/02 v1.0.1 Conversational Review Comments]
+\RequirePackage{expl3}
+\ExplSyntaxOn
+
+\ExplSyntaxOff
+\providecommand{\pgfsyspdfmark}[3]{}
+\providecommand{\commrecord}[4]{}
+\providecommand{\commreportentry}[8]{}
+\providecommand{\hypertarget}[2]{#2}
+\providecommand{\hyperlink}[2]{#2}
+\ExplSyntaxOn
+
+\bool_new:N \g_comm_final_bool
+\bool_new:N \g_comm_timestamps_bool
+\bool_gset_true:N \g_comm_timestamps_bool
+
+\DeclareOption{draft}{\bool_gset_false:N \g_comm_final_bool}
+\DeclareOption{final}{\bool_gset_true:N \g_comm_final_bool}
+\DeclareOption{timestamps}{\bool_gset_true:N \g_comm_timestamps_bool}
+\DeclareOption{notimestamps}{\bool_gset_false:N \g_comm_timestamps_bool}
+\ExecuteOptions{draft,timestamps}
+\ProcessOptions\relax
+
+\bool_if:NTF \g_comm_final_bool {
+  \ExplSyntaxOff
+}{
+  \dim_new:N \g__comm_orig_paperwidth_dim
+  \dim_new:N \g__comm_orig_paperheight_dim
+  \dim_new:N \g__comm_orig_textwidth_dim
+  \dim_new:N \g__comm_orig_textheight_dim
+
+  \ExplSyntaxOff
+  \g__comm_orig_paperwidth_dim=\paperwidth
+  \g__comm_orig_paperheight_dim=\paperheight
+  \g__comm_orig_textwidth_dim=\textwidth
+  \g__comm_orig_textheight_dim=\textheight
+
+  \RequirePackage{xcolor}
+  \RequirePackage{geometry}
+  \RequirePackage{marginnote}
+  \RequirePackage{tikz}
+  \RequirePackage{zref-savepos}
+  \RequirePackage{zref-abspage}
+  \RequirePackage{zref-user}
+  \RequirePackage[calc,showseconds=false]{datetime2}
+  \usetikzlibrary{calc}
+  \ExplSyntaxOn
+}
+\ExplSyntaxOff
+
+\RequirePackage{xparse}
+
+\ExplSyntaxOn
+
+\newlength{\reviewmarginwidth}
+
+\cs_new_protected:Nn \__comm_set_review_margin_width:n {
+  \bool_if:NF \g_comm_final_bool {
+    \setlength{\reviewmarginwidth}{#1}
+    \geometry{
+        paperwidth=\dimexpr \g__comm_orig_paperwidth_dim + 2\reviewmarginwidth \relax,
+        paperheight=\g__comm_orig_paperheight_dim,
+        textwidth=\g__comm_orig_textwidth_dim,
+        textheight=\g__comm_orig_textheight_dim,
+        marginparwidth=\reviewmarginwidth,
+        marginparsep=0.15in,
+        hcentering,
+        vcentering
+    }
+  }
+}
+
+\NewDocumentCommand{\setreviewmarginwidth}{m}{
+  \__comm_set_review_margin_width:n { #1 }
+}
+
+\__comm_set_review_margin_width:n { 2.5in }
+
+\int_new:N \g__comm_count_int
+
+\cs_new:Npn \__comm_parse_tz_hour:w #1 #2 #3 #4 #5 #6 #7 #8 #9 {
+  \__comm_parse_tz_hour_tz:w
+}
+\cs_new:Npn \__comm_parse_tz_hour_tz:w #1 #2 #3 #4 #5 #6 #7 #8 \q_stop {
+  \str_if_eq:eeTF { \tl_to_str:n { #8 } } { Z } {
+    0
+  }{
+    \__comm_parse_tz_hh_hour:w #8 \q_stop
+  }
+}
+\cs_new:Npn \__comm_parse_tz_hh_hour:w #1 #2 #3 #4 #5 #6 #7 \q_stop {
+  #1 #2 #3
+}
+
+\cs_new:Npn \__comm_parse_tz_minute:w #1 #2 #3 #4 #5 #6 #7 #8 #9 {
+  \__comm_parse_tz_minute_tz:w
+}
+\cs_new:Npn \__comm_parse_tz_minute_tz:w #1 #2 #3 #4 #5 #6 #7 #8 \q_stop {
+  \str_if_eq:eeTF { \tl_to_str:n { #8 } } { Z } {
+    0
+  }{
+    \__comm_parse_tz_mm_minute:w #8 \q_stop
+  }
+}
+\cs_new:Npn \__comm_parse_tz_mm_minute:w #1 #2 #3 #4 #5 #6 #7 \q_stop {
+  #5 #6
+}
+
+\int_new:N \g_comm_sys_tz_hour_int
+\int_new:N \g_comm_sys_tz_minute_int
+
+\int_gset:Nn \g_comm_sys_tz_hour_int {
+  \cs_if_exist:NTF \pdfcreationdate {
+    \exp_after:wN \__comm_parse_tz_hour:w \pdfcreationdate \q_stop
+  }{
+    0
+  }
+}
+
+\int_gset:Nn \g_comm_sys_tz_minute_int {
+  \cs_if_exist:NTF \pdfcreationdate {
+    \exp_after:wN \__comm_parse_tz_minute:w \pdfcreationdate \q_stop
+  }{
+    0
+  }
+}
+
+\cs_new:Npn \__comm_format_tz:nn #1 #2 {
+  \int_compare:nNnTF { #1 } < { 0 } {
+    % Negative offset
+    -
+    \int_compare:nNnT { #1 } > { -10 } { 0 }
+    \int_eval:n { \int_abs:n { #1 } }
+  }{
+    % Positive offset
+    +
+    \int_compare:nNnT { #1 } < { 10 } { 0 }
+    \int_eval:n { #1 }
+  }
+  \c_colon_str
+  \int_compare:nNnT { #2 } < { 10 } { 0 }
+  \int_eval:n { \int_abs:n { #2 } }
+}
+
+\cs_new:Npn \__comm_current_iso_timestamp: {
+  \int_if_exist:cTF { c_sys_year_int } {
+    \int_use:N \c_sys_year_int -
+    \int_compare:nNnT { \c_sys_month_int } < { 10 } { 0 }
+    \int_use:N \c_sys_month_int -
+    \int_compare:nNnT { \c_sys_day_int } < { 10 } { 0 }
+    \int_use:N \c_sys_day_int T
+    \int_compare:nNnT { \c_sys_hour_int } < { 10 } { 0 }
+    \int_use:N \c_sys_hour_int \c_colon_str
+    \int_compare:nNnT { \c_sys_minute_int } < { 10 } { 0 }
+    \int_use:N \c_sys_minute_int \c_colon_str 00
+    \__comm_format_tz:nn
+      { \g_comm_sys_tz_hour_int }
+      { \g_comm_sys_tz_minute_int }
+  }{
+    \int_use:N \year -
+    \int_compare:nNnT { \month } < { 10 } { 0 }
+    \int_use:N \month -
+    \int_compare:nNnT { \day } < { 10 } { 0 }
+    \int_use:N \day T
+    \int_compare:nNnT { \int_div_truncate:nn { \time } { 60 } } < { 10 } { 0 }
+    \int_eval:n { \int_div_truncate:nn { \time } { 60 } } \c_colon_str
+    \int_compare:nNnT { \int_mod:nn { \time } { 60 } } < { 10 } { 0 }
+    \int_eval:n { \int_mod:nn { \time } { 60 } } \c_colon_str 00
+    \__comm_format_tz:nn
+      { \g_comm_sys_tz_hour_int }
+      { \g_comm_sys_tz_minute_int }
+  }
+}
+
+\cs_new:Npn \__comm_format_datetime: {
+  \__comm_current_iso_timestamp:
+}
+
+\cs_new:Npn \__comm_pad_two:n #1 {
+  \int_compare:nNnT { #1 } < { 10 } { 0 }
+  \int_eval:n { #1 }
+}
+
+\cs_new_protected:Nn \__comm_render_local_datetime:n {
+  \quark_if_no_value:nTF { #1 } {
+    [No~Date]
+  }{
+    \tl_if_blank:nTF { #1 } {
+      [No~Date]
+    }{
+      \tl_set:No \l_tmpa_tl { #1 }
+      \tl_if_in:NnTF \l_tmpa_tl { T } {
+        \exp_args:NnV \DTMsavetimestamp { comm_temp_time } \l_tmpa_tl
+        \DTMtozulu{comm_temp_time}{comm_zulu_time}
+        \DTMsaveaszulutime{comm_local_time}
+          {\DTMfetchyear{comm_zulu_time}}
+          {\DTMfetchmonth{comm_zulu_time}}
+          {\DTMfetchday{comm_zulu_time}}
+          {\DTMfetchhour{comm_zulu_time}}
+          {\DTMfetchminute{comm_zulu_time}}
+          {0}
+          {\int_eval:n { - \g_comm_sys_tz_hour_int }}
+          {\int_use:N \g_comm_sys_tz_minute_int}
+        \DTMfetchyear{comm_local_time} -
+        \__comm_pad_two:n { \DTMfetchmonth{comm_local_time} } -
+        \__comm_pad_two:n { \DTMfetchday{comm_local_time} }
+        \c_space_tl
+        \__comm_pad_two:n { \DTMfetchhour{comm_local_time} }
+        \c_colon_str
+        \__comm_pad_two:n { \DTMfetchminute{comm_local_time} }
+      }{
+        \l_tmpa_tl
+      }
+    }
+  }
+}
+\cs_generate_variant:Nn \__comm_render_local_datetime:n { V }
+
+\AtBeginDocument{
+  \DTMsavenow{comm_now_global}
+}
+
+\prop_new:N \g_comm_loaded_timestamps_prop
+\prop_new:N \g_comm_resolved_timestamps_prop
+\tl_new:N \l_comm_timestamp_tl
+\tl_new:N \l_comm_reply_timestamp_tl
+\tl_new:N \l_comm_reply_hash_tl
+\tl_new:N \l_comm_current_thread_hash_tl
+\int_new:N \l_comm_reply_idx_int
+\iow_new:N \g_comm_timestamps_iow
+\cs_generate_variant:Nn \prop_gput:Nnn { Nno, Nxx }
+\cs_generate_variant:Nn \prop_get:NnN { NxN }
+\cs_generate_variant:Nn \str_range:nnn { Vnn }
+\prg_generate_conditional_variant:Nnn \tl_if_blank:n { o, V } { TF, T, F }
+
+\cs_new_protected:Nn \__comm_parse_and_store_timestamp:nn {
+  \tl_set:Nn \l_tmpa_tl { #2 }
+  \tl_if_blank:nTF { #2 } {
+    \prop_gput:Nnn \g_comm_loaded_timestamps_prop { #1 } { [No~Date] }
+  }{
+    \tl_if_in:NnTF \l_tmpa_tl { T } {
+      \prop_gput:Nnn \g_comm_loaded_timestamps_prop { #1 } { #2 }
+    }{
+      % Discard old format timezone-less timestamps to force regeneration
+    }
+  }
+}
+
+\NewDocumentCommand{\setcommenttimestamp}{m m}{
+  \__comm_parse_and_store_timestamp:nn { #1 } { #2 }
+}
+
+\file_if_exist:nT { \jobname.commtimestamps } {
+  \ExplSyntaxOff
+  \file_input:n { \jobname.commtimestamps }
+  \ExplSyntaxOn
+}
+\seq_new:N \l__comm_args_seq
+\tl_new:N \l__comm_body_tl
+\tl_new:N \l__comm_color_tl
+\tl_new:N \l__comm_line_color_tl
+\tl_new:N \l__comm_target_tl
+\tl_new:N \l__comm_initial_body_tl
+\tl_new:N \l__comm_initiator_tl
+\tl_new:N \l__comm_initiator_color_tl
+\tl_new:N \l__comm_snippet_tl
+\tl_new:N \l_comm_formatted_timestamp_tl
+\prop_new:N \l_comm_replies_prop
+\int_new:N \l_comm_replies_count
+\tl_new:N \l_author_tl
+\tl_new:N \l_body_tl
+\int_new:N \l__comm_id_int
+\bool_new:N \l_comm_first_reply_bool
+\bool_new:N \l_comm_in_conversation_bool
+\bool_new:N \l_comm_in_report_bool
+\bool_new:N \g_comm_reply_handled_bool
+\bool_new:N \l_comm_save_first_bool
+\bool_new:N \l_comm_valid_coords_bool
+\bool_new:N \l_comm_resolved_bool
+\tl_new:N \l_comm_state_tl
+\tl_new:N \g_comm_current_state_tl
+\bool_new:N \l_comm_should_print_bool
+\seq_new:N \g_comm_report_seq
+
+\prop_new:N \g_comm_commentators_prop
+\tl_new:N \l_initiator_name_tl
+\tl_new:N \l_initiator_color_tl
+\tl_new:N \l_initiator_partner_id_tl
+\tl_new:N \l_partner_name_tl
+\tl_new:N \l_partner_color_tl
+\tl_new:N \l_curr_name_tl
+\tl_new:N \l_curr_color_tl
+
+\seq_new:N \g__comm_pages_seq
+\prop_new:N \g__comm_src_y_prop
+\prop_new:N \g__comm_box_ht_prop
+\dim_new:N \l_comm_box_height_dim
+\dim_new:N \l_comm_shift_dim
+
+\prop_new:N \l_curr_y_prop
+\dim_new:N \l_comm_top_margin_dim
+\dim_new:N \l_comm_bottom_margin_dim
+\dim_new:N \l_y_dim
+\dim_new:N \l_ht_dim
+\dim_new:N \l_y_a
+\dim_new:N \l_y_b
+\dim_new:N \l_ht_a
+\dim_new:N \l_ht_b
+\dim_new:N \l_min_dist
+\dim_new:N \l_curr_dist
+\dim_new:N \l_overlap
+\dim_new:N \l_y_orig
+\dim_new:N \l_y_final
+\dim_new:N \l_shift
+\tl_new:N \l_id_a
+\tl_new:N \l_id_b
+\tl_new:N \l_id_first
+\tl_new:N \l_id_last
+\tl_new:N \l_comm_side_tl
+\tl_new:N \l_tmp_y_tl
+\tl_new:N \l_ht_tl
+
+\cs_generate_variant:Nn \prop_item:Nn { No }
+\cs_generate_variant:Nn \prop_put:Nnn { Nox }
+\cs_generate_variant:Nn \seq_gput_right:Nn { Nx }
+
+\cs_new_protected:Nn \__comm_record:nnnn {
+  \tl_set:Nn \l_comm_side_tl { R } % default
+  \cs_if_exist:cT { commside #1 } {
+    \tl_set:Nx \l_comm_side_tl { \use:c { commside #1 } }
+  }
+
+  \seq_if_exist:cF { g__comm_page_ids_seq_ #2 _ \l_comm_side_tl } {
+    \seq_new:c { g__comm_page_ids_seq_ #2 _ \l_comm_side_tl }
+    \seq_gput_right:Nx \g__comm_pages_seq { #2 _ \l_comm_side_tl }
+  }
+  \seq_gput_right:cn { g__comm_page_ids_seq_ #2 _ \l_comm_side_tl } { #1 }
+  \prop_gput:Nnn \g__comm_src_y_prop { #1 } { #3 }
+  \prop_gput:Nnn \g__comm_box_ht_prop { #1 } { #4 }
+}
+
+\DeclareDocumentCommand{\commrecord}{m m m m}{
+  \__comm_record:nnnn { #1 } { #2 } { #3 } { #4 }
+}
+
+\cs_new_protected:Nn \__comm_solve_elasticity: {
+  \dim_set:Nn \l_comm_top_margin_dim { \paperheight - 0.2in }
+  \dim_set:Nn \l_comm_bottom_margin_dim { 0.2in }
+
+  \seq_map_inline:Nn \g__comm_pages_seq {
+    \group_begin:
+    \bool_set_true:N \l_comm_valid_coords_bool
+
+    % Check if all comments on this page-side have valid (non-zero) coordinates
+    \seq_map_inline:cn { g__comm_page_ids_seq_ ##1 } {
+      \dim_set:Nn \l_y_dim { \prop_item:Nn \g__comm_src_y_prop { ####1 } }
+      \dim_compare:nNnT { \l_y_dim } = { 0pt } {
+        \bool_set_false:N \l_comm_valid_coords_bool
+      }
+    }
+
+    \bool_if:NT \l_comm_valid_coords_bool {
+      % Initialize current Y positions to center-aligned unshifted positions
+      \seq_map_inline:cn { g__comm_page_ids_seq_ ##1 } {
+        \dim_set:Nn \l_y_orig { \prop_item:Nn \g__comm_src_y_prop { ####1 } }
+        \dim_set:Nn \l_ht_dim { \prop_item:No \g__comm_box_ht_prop { ####1 } }
+        \prop_put:Nox \l_curr_y_prop { ####1 } { \dim_eval:n { \l_y_orig + \ht\strutbox - \l_ht_dim / 2 } }
+      }
+
+      % Relaxation Loop (30 iterations)
+      \int_step_inline:nnnn { 1 } { 1 } { 30 } {
+        % Pairwise repulsion (only if page-side has > 1 comment)
+        \int_compare:nT { \seq_count:c { g__comm_page_ids_seq_ ##1 } > 1 } {
+          \int_step_inline:nnnn { 1 } { 1 } { \seq_count:c { g__comm_page_ids_seq_ ##1 } - 1 } {
+            \tl_set:Nx \l_id_a { \seq_item:cn { g__comm_page_ids_seq_ ##1 } { ########1 } }
+            \tl_set:Nx \l_id_b { \seq_item:cn { g__comm_page_ids_seq_ ##1 } { \int_eval:n { ########1 + 1 } } }
+
+            \dim_set:Nn \l_y_a { \prop_item:No \l_curr_y_prop { \l_id_a } }
+            \dim_set:Nn \l_y_b { \prop_item:No \l_curr_y_prop { \l_id_b } }
+
+            \dim_set:Nn \l_ht_a { \prop_item:No \g__comm_box_ht_prop { \l_id_a } }
+            \dim_set:Nn \l_ht_b { \prop_item:No \g__comm_box_ht_prop { \l_id_b } }
+
+            \dim_set:Nn \l_min_dist { \l_ht_a / 2 + \l_ht_b / 2 + 3pt } % 3pt gap
+            \dim_set:Nn \l_curr_dist { \l_y_a - \l_y_b }
+
+            \dim_compare:nNnT { \l_curr_dist } < { \l_min_dist } {
+              \dim_set:Nn \l_overlap { \l_min_dist - \l_curr_dist }
+              \prop_put:Nox \l_curr_y_prop { \l_id_a } { \dim_eval:n { \l_y_a + \l_overlap / 2 } }
+              \prop_put:Nox \l_curr_y_prop { \l_id_b } { \dim_eval:n { \l_y_b - \l_overlap / 2 } }
+            }
+          }
+        }
+
+        % Boundary constraints (if page-side has > 0 comments)
+        \int_compare:nT { \seq_count:c { g__comm_page_ids_seq_ ##1 } > 0 } {
+          % First comment (highest)
+          \tl_set:Nx \l_id_first { \seq_item:cn { g__comm_page_ids_seq_ ##1 } { 1 } }
+          \dim_set:Nn \l_y_dim { \prop_item:No \l_curr_y_prop { \l_id_first } }
+          \dim_set:Nn \l_ht_dim { \prop_item:No \g__comm_box_ht_prop { \l_id_first } }
+          \dim_compare:nNnT { \l_y_dim + \l_ht_dim / 2 } > { \l_comm_top_margin_dim } {
+            \prop_put:Nox \l_curr_y_prop { \l_id_first } { \dim_eval:n { \l_comm_top_margin_dim - \l_ht_dim / 2 } }
+          }
+
+          % Last comment (lowest)
+          \tl_set:Nx \l_id_last { \seq_item:cn { g__comm_page_ids_seq_ ##1 } { \seq_count:c { g__comm_page_ids_seq_ ##1 } } }
+          \dim_set:Nn \l_y_dim { \prop_item:No \l_curr_y_prop { \l_id_last } }
+          \dim_set:Nn \l_ht_dim { \prop_item:No \g__comm_box_ht_prop { \l_id_last } }
+          \dim_compare:nNnT { \l_y_dim - \l_ht_dim / 2 } < { \l_comm_bottom_margin_dim } {
+            \prop_put:Nox \l_curr_y_prop { \l_id_last } { \dim_eval:n { \l_comm_bottom_margin_dim + \l_ht_dim / 2 } }
+          }
+        }
+      }
+
+      % Save final calculated shifts
+      \seq_map_inline:cn { g__comm_page_ids_seq_ ##1 } {
+        \dim_set:Nn \l_y_orig { \prop_item:Nn \g__comm_src_y_prop { ####1 } }
+        \dim_set:Nn \l_ht_dim { \prop_item:No \g__comm_box_ht_prop { ####1 } }
+        \dim_set:Nn \l_y_final { \prop_item:Nn \l_curr_y_prop { ####1 } }
+        \dim_set:Nn \l_shift { \l_y_orig + \ht\strutbox - \l_ht_dim / 2 - \l_y_final }
+        \tl_gset:cx { g__comm_shift_ ####1 _dim } { \dim_use:N \l_shift }
+      }
+    }
+    \group_end:
+  }
+}
+
+\AtBeginDocument{
+  \bool_if:NF \g_comm_final_bool {
+    \__comm_solve_elasticity:
+  }
+}
+
+\cs_new_protected:Nn \__comm_draw_box:nnn {
+  \group_begin:
+  \int_set:Nn \l_comm_reply_idx_int { 0 }
+  \noindent % Ensure no indent in the margin
+  \zlabel{commdest-#2}%
+  \begin{tikzpicture}[remember~picture, baseline=(commdest-#2.center)]
+    \node [
+      draw=\l__comm_color_tl,
+      fill=white,
+      line~width=1.2pt,
+      inner~sep=\fboxsep,
+      text~width=\dimexpr \marginparwidth - 2\fboxsep - 1.2pt \relax,
+      align=left,
+      font=\scriptsize\raggedright,
+      outer~sep=0pt
+    ] (commdest-#2) {%
+      \bool_set_true:N \l_comm_in_conversation_bool%
+      \setlength{\parindent}{0pt}%
+      \str_if_eq:VnT \l_comm_state_tl { resolved } {
+        \textcolor{gray}{\textbf{[Resolved]}} \par\vspace{2pt}
+      }
+      \str_if_eq:VnT \l_comm_state_tl { to_review } {
+        \textcolor{orange}{\textbf{[To~Review]}} \par\vspace{2pt}
+      }
+      \ignorespaces #1%
+      \bool_if:NT \g_comm_timestamps_bool {
+        \tl_if_blank:oF { \l__comm_target_tl } {
+          \par\vspace{3pt}
+          \hfill{\tiny\textcolor{gray}{\__comm_render_local_datetime:n { #3 }}}%
+        }
+      }
+    };
+  \end{tikzpicture}
+  \group_end:
+}
+\cs_generate_variant:Nn \__comm_draw_box:nnn { Vnn }
+
+\cs_new_protected:Nn \__comm_render_note:n {
+  \bool_if:NTF \g_comm_final_bool {
+    \tl_if_blank:nF { \l__comm_target_tl } {
+      \l__comm_target_tl
+    }
+  }{
+    \tl_set_eq:NN \l__comm_line_color_tl \l__comm_color_tl
+    \int_gincr:N \g__comm_count_int
+    \int_set_eq:NN \l__comm_id_int \g__comm_count_int
+
+    % Compute stable MD5 hash for the comment thread (based on initiator, target text, and initial comment body)
+    \tl_set:Nx \l_comm_current_thread_hash_tl {
+      \str_mdfive_hash:e {
+        \tl_to_str:V \l__comm_initiator_tl / \tl_to_str:V \l__comm_target_tl / \tl_to_str:V \l__comm_initial_body_tl
+      }
+    }
+
+    % Get or generate timestamp for this comment thread
+    \tl_if_blank:oTF { \l__comm_target_tl } {
+      \tl_clear:N \l_comm_timestamp_tl
+    }{
+      \prop_get:NxN \g_comm_loaded_timestamps_prop { \l_comm_current_thread_hash_tl } \l_comm_timestamp_tl
+      \quark_if_no_value:NT \l_comm_timestamp_tl {
+        \tl_set:Nx \l_comm_timestamp_tl { \__comm_format_datetime: }
+      }
+      \prop_gput:Nxx \g_comm_resolved_timestamps_prop { \l_comm_current_thread_hash_tl } { \l_comm_timestamp_tl }
+    }
+
+    % Marker
+    \zsaveposy{commsrc-\int_use:N \l__comm_id_int}%
+    \zlabel{commsrcpage-\int_use:N \l__comm_id_int}%
+    \hypertarget{commsrc-\int_use:N \l__comm_id_int}{}%
+    \tikz[remember~picture,overlay,baseline]{
+      \node[anchor=base,inner~sep=0pt,outer~sep=0pt](commsrc-\int_use:N \l__comm_id_int){\strut};
+    }
+
+    % Measure box height of the comment and cache the typeset box
+    \bool_set_eq:NN \l_comm_save_first_bool \l_comm_first_reply_bool
+    \hbox_set:Nn \l_comm_render_box {
+      \__comm_draw_box:Vnn \l__comm_body_tl { \int_use:N \l__comm_id_int } { \l_comm_timestamp_tl }
+    }
+    \bool_gset_eq:NN \l_comm_first_reply_bool \l_comm_save_first_bool
+    \dim_set:Nn \l_comm_box_height_dim { \box_ht:N \l_comm_render_box + \box_dp:N \l_comm_render_box }
+
+    % Detect position and write to aux (for next run)
+    \begin{tikzpicture}[remember~picture, overlay]
+    \path (commsrc-\int_use:N \l__comm_id_int.center); \pgfgetlastxy{\xn}{\yn}
+    \path (current~page.center); \pgfgetlastxy{\xc}{\yc}
+    \dim_compare:nNnTF { \xn } < { \xc } {
+      \tl_set:Nn \l_tmpa_tl { L }
+    }{
+      \tl_set:Nn \l_tmpa_tl { R }
+    }
+    \iow_now:Nx \@auxout {
+      \exp_not:N \expandafter \exp_not:N \gdef \exp_not:N \csname commside \int_use:N \l__comm_id_int \exp_not:N \endcsname { \l_tmpa_tl }
+      \exp_not:N \commrecord { \int_use:N \l__comm_id_int } { \zref@extractdefault { commsrcpage-\int_use:N \l__comm_id_int } { abspage } { \thepage } } { \zposy{commsrc-\int_use:N \l__comm_id_int}sp } { \the\l_comm_box_height_dim }
+      \exp_not:N \commreportentry { \int_use:N \l__comm_id_int } { \zref@extractdefault { commsrcpage-\int_use:N \l__comm_id_int } { abspage } { \thepage } } { \tl_to_str:N \l__comm_initiator_tl } { \l_comm_current_thread_hash_tl } { \tl_to_str:N \l__comm_target_tl } { \exp_not:V \l__comm_snippet_tl } { \l_comm_state_tl } { \l_comm_timestamp_tl }
+    }
+  \end{tikzpicture}
+
+  % Use the recorded side or default
+  \cs_if_exist:cTF { commside \int_use:N \l__comm_id_int } {
+    \str_if_eq:eeTF { \use:c { commside \int_use:N \l__comm_id_int } } { L } {
+       \reversemarginpar
+    }{
+       \normalmarginpar
+    }
+  }{
+    \normalmarginpar
+  }
+
+  % Fetch calculated elastic shift or default to 0pt
+  \cs_if_exist:cTF { g__comm_shift_ \int_use:N \l__comm_id_int _dim } {
+    \dim_set_eq:Nc \l_comm_shift_dim { g__comm_shift_ \int_use:N \l__comm_id_int _dim }
+  }{
+    \dim_set:Nn \l_comm_shift_dim { 0pt }
+  }
+
+  % Placement in margin with shift (reuse the cached typeset box)
+  \use:x {
+    \exp_not:N \marginnote
+      { \exp_not:N \box_use_drop:N \exp_not:N \l_comm_render_box }
+      [ \dim_eval:n { #1 + \l_comm_shift_dim } ]
+  }
+
+  \normalmarginpar % Reset
+
+  \tl_if_blank:nF { \l__comm_target_tl } {
+    \group_begin:
+    \color{\l__comm_line_color_tl} \l__comm_target_tl
+    \group_end:
+  }
+
+  % Draw the connecting line (only if both source and destination end up on the same page)
+  \int_set:Nn \l_tmpa_int { \zref@extractdefault { commsrcpage-\int_use:N \l__comm_id_int } { abspage } { 0 } }
+  \int_set:Nn \l_tmpb_int { \zref@extractdefault { commdest-\int_use:N \l__comm_id_int } { abspage } { 1 } }
+  \int_compare:nNnT { \l_tmpa_int } = { \l_tmpb_int } {
+    \use:x {
+      \exp_not:N \begin{tikzpicture}[remember~picture,overlay]
+        \exp_not:N \path (commsrc-\int_use:N \l__comm_id_int.center); \exp_not:N \pgfgetlastxy{\exp_not:N \commxsrc}{\exp_not:N \commysrc}
+        \exp_not:N \path (commdest-\int_use:N \l__comm_id_int.center); \exp_not:N \pgfgetlastxy{\exp_not:N \commxdest}{\exp_not:N \commydest}
+        \exp_not:N \path (current~page.center); \exp_not:N \pgfgetlastxy{\exp_not:N \commxc}{\exp_not:N \commyc}
+        \exp_not:N \ifdim \exp_not:N \commxdest > \exp_not:N \commxc
+          \exp_not:N \draw[semithick, \l__comm_line_color_tl, opacity=0.8]
+            ($(current~page.center |- commsrc-\int_use:N \l__comm_id_int.base) + (0.5*\exp_not:N \textwidth, 0)$)
+            -- (commdest-\int_use:N \l__comm_id_int.west);
+        \exp_not:N \else
+          \exp_not:N \draw[semithick, \l__comm_line_color_tl, opacity=0.8]
+            ($(current~page.center |- commsrc-\int_use:N \l__comm_id_int.base) - (0.5*\exp_not:N \textwidth, 0)$)
+            -- (commdest-\int_use:N \l__comm_id_int.east);
+        \exp_not:N \fi
+      \exp_not:N \end{tikzpicture}
+    }
+  }
+}
+}
+
+\cs_generate_variant:Nn \prop_get:NnN { NoN }
+
+\box_new:N \l_comm_scratch_box
+\box_new:N \l_comm_render_box
+
+\NewDocumentCommand{\commreply}{m m}{
+  \bool_gset_false:N \g_comm_reply_handled_bool
+  \group_begin:
+    \bool_set_eq:NN \l_comm_save_first_bool \l_comm_first_reply_bool
+    % Dry run in a scratch vbox to detect commentator macros
+    \vbox_set:Nn \l_comm_scratch_box {
+      \hsize=\dimexpr \marginparwidth - 2\fboxsep - 1.2pt \relax
+      #2
+    }
+    \bool_gset_eq:NN \l_comm_first_reply_bool \l_comm_save_first_bool
+  \group_end:
+
+  \bool_if:NTF \g_comm_reply_handled_bool {
+    % It was self-formatted: execute it directly in the main stream
+    #2
+  }{
+    % Plain text: format with default author
+    \use:c { #1 reply } { #2 }
+  }
+}
+
+\cs_new_protected:Nn \__comm_process:nn {
+  \bool_gset_true:N \l_comm_first_reply_bool
+
+  \seq_get_left:NN \l__comm_args_seq \l_tmpa_tl
+  \seq_pop_left:NN \l__comm_args_seq \l_tmpb_tl
+
+  \tl_set_eq:NN \l__comm_target_tl \l_tmpa_tl
+
+  \prop_clear:N \l_comm_replies_prop
+  \seq_if_empty:NTF \l__comm_args_seq {
+    \prop_put:Nnn \l_comm_replies_prop { 1/author } { #1 }
+    \prop_put:Nox \l_comm_replies_prop { 1/body } { \l_tmpa_tl }
+    \tl_set_eq:NN \l__comm_initial_body_tl \l_tmpa_tl
+    \int_set:Nn \l_comm_replies_count { 1 }
+    \tl_clear:N \l__comm_target_tl
+  }{
+    \prop_get:NnN \g_comm_commentators_prop { #1/partner } \l_initiator_partner_id_tl
+    \int_set:Nn \l_comm_replies_count { \seq_count:N \l__comm_args_seq }
+
+    \int_step_inline:nn { \l_comm_replies_count } {
+      \int_if_odd:nTF { ##1 } {
+        \tl_set:Nn \l_curr_id_tl { #1 }
+      }{
+        \tl_set_eq:NN \l_curr_id_tl \l_initiator_partner_id_tl
+        \tl_if_empty:NT \l_curr_id_tl {
+          \tl_set:Nn \l_curr_id_tl { #1 }
+        }
+      }
+      \prop_put:Nox \l_comm_replies_prop { ##1/author } { \l_curr_id_tl }
+      \prop_put:Nox \l_comm_replies_prop { ##1/body } { \seq_item:Nn \l__comm_args_seq { ##1 } }
+    }
+    \tl_set:Nx \l__comm_initial_body_tl { \seq_item:Nn \l__comm_args_seq { 1 } }
+  }
+
+  % Replay/Build \l__comm_body_tl from property list with strict expansion protection
+  \tl_clear:N \l__comm_body_tl
+  \int_step_inline:nn { \l_comm_replies_count } {
+    \prop_get:NnN \l_comm_replies_prop { ##1/author } \l_author_tl
+    \prop_get:NnN \l_comm_replies_prop { ##1/body } \l_body_tl
+    \tl_put_right:Nx \l__comm_body_tl {
+      \exp_not:N \commreply { \l_author_tl } { \exp_not:o \l_body_tl }
+    }
+  }
+
+  \prop_get:NnN \g_comm_commentators_prop { #1/name } \l__comm_initiator_tl
+  \prop_get:NnN \g_comm_commentators_prop { #1/color } \l__comm_initiator_color_tl
+  \tl_set:Nx \l__comm_snippet_tl {
+    \seq_if_empty:NTF \l__comm_args_seq {
+      \exp_not:N \commreply { #1 } { \exp_not:V \l__comm_body_tl }
+    }{
+      \exp_not:V \l__comm_body_tl
+    }
+  }
+
+  \prop_get:NnN \g_comm_commentators_prop { #1/color } \l__comm_color_tl
+  \__comm_render_note:n { #2 }
+}
+
+\cs_new_protected:Nn \__comm_register_commentator:nnnn {
+  \prop_gput:Nnn \g_comm_commentators_prop { #1/name } { #2 }
+  \prop_gput:Nnn \g_comm_commentators_prop { #1/color } { #3 }
+  \prop_gput:Nnn \g_comm_commentators_prop { #1/partner } { #4 }
+
+  % Main alternating command: \<id> (e.g. \bill)
+  \exp_args:Nc \NewDocumentCommand { #1 } { s t+ } {%
+    \bool_if:NTF \l_comm_in_conversation_bool {%
+      \bool_if:NTF ##1 {%
+        \use:c { #1 reply } { * }%
+      }{%
+        \bool_if:NTF ##2 {%
+          \use:c { #1 reply } { + }%
+        }{%
+          \use:c { __comm_reply_only_ #1 }%
+        }%
+      }%
+    }{%
+      % Thread starter
+      \bool_if:NTF ##1 {
+        \tl_gset:Nn \g_comm_current_state_tl { resolved }
+      }{
+        \bool_if:NTF ##2 {
+          \tl_gset:Nn \g_comm_current_state_tl { to_review }
+        }{
+          \tl_gset:Nn \g_comm_current_state_tl { unresolved }
+        }
+      }
+      \use:c { __comm_impl_ #1 }%
+    }%
+  }
+
+  \exp_args:Nc \NewDocumentCommand { __comm_reply_only_ #1 } { m } {%
+    \use:c { #1 reply } { ##1 }%
+  }
+
+  % The internal implementation command parses the rest of the arguments
+  \exp_args:Nc \NewDocumentCommand { __comm_impl_ #1 } { m +g +g +g +g +g +g O{0pt} } {%
+    \tl_set_eq:NN \l_comm_state_tl \g_comm_current_state_tl
+    \seq_clear:N \l__comm_args_seq%
+    \seq_put_right:Nn \l__comm_args_seq { ##1 }%
+    \IfValueT { ##2 } { \seq_put_right:Nn \l__comm_args_seq { ##2 } }%
+    \IfValueT { ##3 } { \seq_put_right:Nn \l__comm_args_seq { ##3 } }%
+    \IfValueT { ##4 } { \seq_put_right:Nn \l__comm_args_seq { ##4 } }%
+    \IfValueT { ##5 } { \seq_put_right:Nn \l__comm_args_seq { ##5 } }%
+    \IfValueT { ##6 } { \seq_put_right:Nn \l__comm_args_seq { ##6 } }%
+    \IfValueT { ##7 } { \seq_put_right:Nn \l__comm_args_seq { ##7 } }%
+    \__comm_process:nn { #1 } { ##8 }%
+  }
+
+  % Inline formatter: \<id>reply (e.g. \billreply)
+  \exp_args:Nc \NewDocumentCommand { #1 reply } { m } {%
+    \bool_gset_true:N \g_comm_reply_handled_bool%
+    \bool_if:NTF \l_comm_first_reply_bool {%
+      \bool_gset_false:N \l_comm_first_reply_bool%
+    }{%
+      \par\vspace{3pt}%
+    }%
+    \__comm_format_reply:nnnn { #1 } { #2 } { #3 } { ##1 }%
+  }
+}
+
+\cs_new_protected:Nn \__comm_format_reply:nnnn {
+  \int_incr:N \l_comm_reply_idx_int
+
+  % Compute stable MD5 hash for the reply content (based on author and reply body)
+  \tl_set:Nx \l_comm_reply_hash_tl {
+    \str_mdfive_hash:n {
+      #1 / #2 / #4
+    }
+  }
+
+  \prop_get:NxN \g_comm_loaded_timestamps_prop { \l_comm_reply_hash_tl } \l_comm_reply_timestamp_tl
+  \quark_if_no_value:NT \l_comm_reply_timestamp_tl {
+    \tl_set:Nx \l_comm_reply_timestamp_tl { \__comm_format_datetime: }
+  }
+  \prop_gput:Nxx \g_comm_resolved_timestamps_prop {  \l_comm_reply_hash_tl } { \l_comm_reply_timestamp_tl }
+
+  \textcolor { #3 } {
+    \textbf { #2 }
+    \bool_if:NT \g_comm_timestamps_bool {
+      \textnormal{~\textcolor{gray}{\tiny~[ \__comm_render_local_datetime:V \l_comm_reply_timestamp_tl ]}}
+    }
+    \textbf { : }~#4
+  }
+}
+
+\NewDocumentCommand{\newcommentator}{m m m O{}}{
+  \__comm_register_commentator:nnnn { #1 } { #2 } { #3 } { #4 }
+}
+
+\cs_new_protected:Nn \__comm_add_report_entry:nnnnnnnn {
+  \seq_gput_right:Nn \g_comm_report_seq { { #1 } { #2 } { #3 } { #4 } { #5 } { #6 } { #7 } { #8 } }
+}
+
+\DeclareDocumentCommand{\commreportentry}{m m m m m m m m}{
+  \__comm_add_report_entry:nnnnnnnn { #1 } { #2 } { #3 } { #4 } { #5 } { #6 } { #7 } { #8 }
+}
+
+\NewDocumentCommand{\conversation}{s t+}{
+  \bool_if:NTF #1 {
+    \tl_gset:Nn \g_comm_current_state_tl { resolved }
+  }{
+    \bool_if:NTF #2 {
+      \tl_gset:Nn \g_comm_current_state_tl { to_review }
+    }{
+      \tl_gset:Nn \g_comm_current_state_tl { unresolved }
+    }
+  }
+  \__comm_impl_conversation
+}
+
+\NewDocumentCommand{\__comm_impl_conversation}{m +m O{0pt}}{
+  \group_begin:
+  \tl_set_eq:NN \l_comm_state_tl \g_comm_current_state_tl
+  \bool_gset_true:N \l_comm_first_reply_bool
+  \tl_set:Nn \l__comm_target_tl { #1 }
+  \tl_set:Nn \l__comm_body_tl { #2 }
+  \tl_trim_spaces:N \l__comm_body_tl
+  \tl_set:Nn \l__comm_initial_body_tl { #2 }
+  \tl_set:Nn \l__comm_color_tl { gray } % Neutral rim for multi-author
+  \tl_set:Nn \l__comm_initiator_tl { Group }
+  \tl_set:Nn \l__comm_initiator_color_tl { gray }
+  \tl_set_eq:NN \l__comm_snippet_tl \l__comm_body_tl
+  \__comm_render_note:n { #3 }
+  \group_end:
+}
+
+\cs_new_protected:Nn \__comm_render_report_entry:nnnnnnnnn {
+  \group_begin:
+  \tl_set:Nn \l_comm_current_thread_hash_tl { #4 }
+  \tl_if_blank:nF { #5 } {
+    \prop_gput:Nxx \g_comm_resolved_timestamps_prop { \l_comm_current_thread_hash_tl } { #8 }
+  }
+  \tl_set:Nn \l_curr_filter_tl { #9 }
+  \bool_set_true:N \l_comm_should_print_bool
+
+  \tl_set:Nn \l_curr_state_tl { #7 }
+  % Normalize old true/false values for backwards compatibility
+  \str_if_eq:eeT { \l_curr_state_tl } { true } { \tl_set:Nn \l_curr_state_tl { resolved } }
+  \str_if_eq:eeT { \l_curr_state_tl } { false } { \tl_set:Nn \l_curr_state_tl { unresolved } }
+
+  \str_if_eq:VnT \l_curr_filter_tl { unresolved } {
+    \str_if_eq:eeF { \l_curr_state_tl } { unresolved } {
+      \bool_set_false:N \l_comm_should_print_bool
+    }
+  }
+  \str_if_eq:VnT \l_curr_filter_tl { resolved } {
+    \str_if_eq:eeF { \l_curr_state_tl } { resolved } {
+      \bool_set_false:N \l_comm_should_print_bool
+    }
+  }
+
+  % Check if filter is to_review/to-review
+  \bool_set_false:N \l_tmpa_bool
+  \str_if_eq:VnT \l_curr_filter_tl { to_review } { \bool_set_true:N \l_tmpa_bool }
+  \str_if_eq:VnT \l_curr_filter_tl { to-review } { \bool_set_true:N \l_tmpa_bool }
+  \str_if_eq:VnT \l_curr_filter_tl { to~review } { \bool_set_true:N \l_tmpa_bool }
+
+  \bool_if:NT \l_tmpa_bool {
+    \str_if_eq:eeF { \l_curr_state_tl } { to_review } {
+      \bool_set_false:N \l_comm_should_print_bool
+    }
+  }
+
+  \bool_if:NT \l_comm_should_print_bool {
+    \vspace{8pt}
+    \noindent
+    \int_set:Nn \l__comm_id_int { #1 }
+    \int_set:Nn \l_comm_reply_idx_int { 0 }
+    \bool_set_true:N \l_comm_first_reply_bool
+    \tl_set:Nn \l_comm_current_thread_hash_tl { #4 }
+    \hyperlink{commsrc-#1}{\textbf{[\##1]}}~on~page~\hyperlink{commsrc-#1}{#2}~~---~~%
+    \str_if_eq:eeTF { \l_curr_state_tl } { resolved } {
+      \textcolor{gray}{\textbf{[Resolved]}}
+    }{
+      \str_if_eq:eeTF { \l_curr_state_tl } { to_review } {
+        \textcolor{orange}{\textbf{[To~Review]}}
+      }{
+        \textcolor{red}{\textbf{[Unresolved]}}
+      }
+    }
+    \par\vspace{3pt}
+    \bool_if:NT \g_comm_timestamps_bool {
+      \tl_if_blank:nF { #5 } {
+        \hspace*{1.5em}\textbf{Date:}~\texttt{\__comm_render_local_datetime:n { #8 }} \par\vspace{2pt}
+      }
+    }
+    \tl_if_blank:nF { #5 } {
+      \hspace*{1.5em}\textbf{Target:}~\texttt{\tl_to_str:n { #5 }} \par\vspace{2pt}
+    }
+    \hspace*{1.5em}\textbf{Comments:}~#6
+    \par
+  }
+  \group_end:
+}
+
+\NewDocumentCommand{\printconversations}{O{unresolved}}{
+  \group_begin:
+  \bool_set_true:N \l_comm_in_conversation_bool
+  \seq_if_empty:NTF \g_comm_report_seq {
+    No~conversations~recorded.
+  }{
+    \seq_map_inline:Nn \g_comm_report_seq {
+      \__comm_render_report_entry:nnnnnnnnn ##1 { #1 }
+    }
+  }
+  \group_end:
+}
+
+\cs_new_protected:Nn \__comm_write_timestamp:nn {
+  \iow_now:Nx \g_comm_timestamps_iow {
+     \exp_not:N \setcommenttimestamp { #1 } { #2 }
+  }
+}
+
+\cs_new_protected:Nn \__comm_write_timestamps_file: {
+  \iow_open:Nn \g_comm_timestamps_iow { \jobname.commtimestamps }
+  \prop_map_function:NN \g_comm_resolved_timestamps_prop \__comm_write_timestamp:nn
+  \iow_close:N \g_comm_timestamps_iow
+}
+
+\AtEndDocument{
+  \__comm_write_timestamps_file:
+}
+
+\ExplSyntaxOff
+\endinput
+%%
+%% End of file `conversationalcomments.sty'.

@@ -1,0 +1,53 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{poormanssubfig}[2025/02/14 A subfigure environment
+  with working labels in the top-left corner that is compatible with revtex.]
+
+
+\newcounter{subfigure}
+\newcommand{\subfiglabelsize}{\small}
+\makeatletter
+\let\multifig@old@label\label%
+\def\label#1{%
+  \multifig@old@label{#1}%
+  \if@insubfig%
+    \@bsphack%
+    \protected@write\@auxout{}%
+    {\string\newlabel{#1@multifig}{{(\alph{subfigure})}%
+          {\thepage}%
+          {\@currentlabelname}%
+          {\@currentHref}{}%
+      }}%
+    \@esphack%
+  \fi
+}%
+\def\subref#1{\ref{#1@multifig}}
+
+
+\newenvironment{multifig}%
+{\setcounter{subfigure}{0}%
+  \renewcommand\thesubfigure{%
+    \the\numexpr \value{figure} + 1\relax(\alph{subfigure})}%
+}
+{}
+
+\ExplSyntaxOn
+\newif\if@insubfig
+\NewDocumentEnvironment{subfigure}{mO{}}{%
+  \@insubfigtrue%
+  \refstepcounter{subfigure}%
+  \begin{minipage}{#1}%
+    \raggedright{{\subfiglabelsize (\alph{subfigure})~#2}}%
+    }
+    {\end{minipage}%
+  \@insubfigfalse%
+}
+\ExplSyntaxOff
+\makeatother
+
+% Local Variables:
+% overleaf-document-id: "684765a3fc38734b74686b40"
+% overleaf-project-id: "6745e47320ed7e0c8f0b1f33"
+% overleaf-track-changes: nil
+% overleaf-auto-save: nil
+% overleaf-url: "https://www.overleaf.com"
+% End:
