@@ -148,120 +148,119 @@ urlcolor=cyan]{hyperref} % load late
   \label{fig:tray}
 \end{figure}
 
-We begin by deriving the equations of motion for the undampened and undriven setup illustrated in \cref{fig:tray} and will later add damping and drives ad-hoc. The Lagrangian of the above setup is given in terms of the elongation of the masses on the springs \(x_{n}\) relative to their rest position and the position of the tray \(x_{t}\)
+We begin by deriving the equations of motion for the undamped and undriven setup illustrated in \cref{fig:tray} and will later add damping and drives \emph{ad hoc}. The Lagrangian of the above setup is given in terms of the elongation of the masses on the springs \(x_{n}\) relative to their rest position and the position of the tray \(x_{t}\):
 \begin{equation}
-  \label{eq:1}
+  \label{eq:lagrangian}
   L = T-V = \frac{m_{t}}{2} \dot{x}^{2}_{t}
   + \frac{m}{2}\sum_{n=1}^{N} \dot{x}^{2}_{n} - \frac{k}{2}\sum_{n=1}^{N} x_{n}^{2}.
 \end{equation}
-The resulting equations of motion with the ad-hoc damping and driving terms (in grey) are
+The resulting equations of motion with the \emph{ad hoc} damping and driving terms (in grey) are:
 \begin{align}
-  \label{eq:3}
+  \label{eq:eom_tray}
   \ddot{x}_{t} + \frac{m}{M} \sum_{n}\ddot{x}_{n}&=  \color{gray}{- \frac{\Gamma}{m_{t}} \dot{x}}\\
-  \label{eq:4}\ddot{x}_{n}+\ddot{x}_{t} &= -\frac{k}{m} x_{n} +\color{gray}{\mu \pqty{\hat{x}^{2}-x_{n}^{2}}\dot{x}_{n}},
+  \label{eq:eom_oscillator}\ddot{x}_{n}+\ddot{x}_{t} &= -\frac{k}{m} x_{n} +\color{gray}{\mu \pqty{\hat{x}^{2}-x_{n}^{2}}\dot{x}_{n}},
 \end{align}
 where \(M= m_{t}+N m\) is the total mass of the system and \(\Gamma\) is the friction coefficient of the tray wheels.
-In \cref{eq:4} we also added a \emph{van der Pol} oscillator inspired driving term where \(\mu\) is the drive strength, and \(\hat{x}\) is the ``target amplitude''. Intuitively, the drive tries to keep the maximal oscillator amplitude (and thus its energy) constant just as the wound spring in a metronome\vale{}{Not sure if this is the best model... but including also the kinetic energy in the drive term would be pretty rough.}.
+In \cref{eq:eom_oscillator}, we also added a van der Pol oscillator-inspired driving term, where \(\mu\) is the drive strength and \(\hat{x}\) is the ``target amplitude''. Intuitively, the drive tries to keep the maximal oscillator amplitude (and thus its energy) constant, just as the wound spring in a metronome does\vale{}{Not sure if this is the best model... but including also the kinetic energy in the drive term would be pretty rough.}.
 
-Now inspecting \cref{eq:3} we see that \(x_{t}\) only couples to the collective ``center of mass'' of the spring masses. It is thus useful to Fourier transform the spring elongations:
+Now, inspecting \cref{eq:eom_tray}, we see that \(x_{t}\) only couples to the collective ``center of mass'' of the spring masses. It is thus useful to perform a Fourier transform on the spring elongations:
 \begin{equation}
-  \label{eq:5}
+  \label{eq:fourier_def}
   y_{k} = \frac{1}{N}\sum_{n} \eu^{-2\pi\iu k n}x_{n}
 \end{equation}
 where \(k=-\lceil (N-1) / 2\rceil,\ldots,\lfloor(N-1) / 2\rfloor\) and \(y_{-k}=y^{*}_{k}\).
 
-In this ``momentum'' basis,
+In this ``momentum'' basis:
 \begin{align}
-  \label{eq:6}
+  \label{eq:eom_tray_fourier}
   \ddot{x}_{t} + \frac{m N}{M} \ddot{y}_{0}&=  {- \frac{\Gamma}{m_{t}} \dot{x}_{t}}\\
-  \label{eq:7}\ddot{y}_{k}+\delta_{k,0}\ddot{x}_{t} &= -\frac{k}{m} y_{k} +{\frac{\mu}{m} \pqty{\hat{x}^{2}\dot{y}_{k}-\sum_{pq}y_{p}y_{q}\dot{y}_{k-(p+q)}}}.
+  \label{eq:eom_fourier_modes}\ddot{y}_{k}+\delta_{k,0}\ddot{x}_{t} &= -\frac{k}{m} y_{k} +{\frac{\mu}{m} \pqty{\hat{x}^{2}\dot{y}_{k}-\sum_{pq}y_{p}y_{q}\dot{y}_{k-(p+q)}}}.
 \end{align}
-Albeit the drive term has been much complicated it is now clear that only the common \(y_{0}\) mode couples to the movement of the tray. Setting \(\Gamma=m_{t}=0\) we have
+Although the drive term has been greatly complicated, it is now clear that only the common \(y_{0}\) mode couples to the movement of the tray. Setting \(\Gamma=m_{t}=0\), we have
 \begin{equation}
-  \label{eq:8}
+  \label{eq:effective_mass}
   m {\pqty{\ddot{y}_{0}-\ddot{x_{t}}}} = \underbrace{m \pqty{1 - \frac{mN}{m_{t} + mN}}}_{m_{\text{eff}}}\ddot{y}_{0}=-k y_{k}.
 \end{equation}
-Low and behold, the \(y_{0}\) mode behaves like an oscillator with an effectively reduced mass. For \(m N \gg m_{t}\) this mass becomes very small \(m_{\text{eff}} \ll m\) and we can expect this mode to react to the drive term more quickly than the other momentum modes. For finite damping \(\Gamma >0\) will lead to loss out of the \(y_{0}\) mode. Thus  without a drive, the \(y_{0}\) mode will always tend to zero at large times while the other modes persist if initially excited.
+Lo and behold, the \(y_{0}\) mode behaves like an oscillator with an effectively reduced mass. For \(m N \gg m_{t}\), this mass becomes very small, \(m_{\text{eff}} \ll m\), and we can expect this mode to react to the drive term more quickly than the other momentum modes. For finite damping, a value of \(\Gamma >0\) leads to energy loss from the \(y_{0}\) mode. Thus, without a drive, the \(y_{0}\) mode will always tend to zero at long times, while the other modes persist if initially excited.
 
-Initializing the system with \(x_{t}=y_{k}=0\) and random nudges \(\dot{y}_{k}\neq 0\) and assuming that \(\Gamma\) is sufficiently small we see that for short times where \(y_{k}\approx 0\) we can neglect the quadratic terms in the drive to arrive at
+Initializing the system with \(x_{t}=y_{k}=0\) and random nudges \(\dot{y}_{k}\neq 0\), and assuming that \(\Gamma\) is sufficiently small, we see that for short times where \(y_{k}\approx 0\) we can neglect the quadratic terms in the drive to arrive at:
 \begin{align}
-  \label{eq:9}
+  \label{eq:linearized_eom}
   \ddot{y}_{0} &= -\frac{k}{m_{\text{eff}}}y_{0} + \frac{\mu}{m_{\text{eff}}}\hat{x}^{2} \dot{y}_{0}\\
   \ddot{y}_{k\neq 0} &= -\frac{k}{m} y_{k} + \frac{\mu}{m}\hat{x}^{2} \dot{y}_{0}
 \end{align}
-For short times up to order \(t^{2}\) and \(\dot{y}_{0}(0)\neq 0\) we then have
+For short times up to order \(t^{2}\) and for \(\dot{y}_{0}(0)\neq 0\), we then have
 \begin{equation}
-  \label{eq:10}
+  \label{eq:mode_ratio}
   \frac{{y_{0}(t)}}{y_{k\neq 0}(t)} =
   \frac{m}{m_{\text{eff}}}\frac{{\dot{y}_{0}(0)}}{{\dot{y}_{k}(0)}} \frac{2m_{\text{eff}} +\mu\hat{x}^{2}t }{2m +\mu\hat{x}^{2}t } \overset{t\gtrsim \frac{2m}{\mu \hat{x}^{2}}}{\gg} 1.
 \end{equation}
 Note that the next term in the short-time expansion of \(y_{k}(t)\) is
 \begin{equation}
-  \label{eq:11}
-  \frac{\hat{x}^{2}\mu^{2}-km_{k}}{6m^{2}_{k}}t^{3
-  } \dot{y}_{n}(0),
+  \label{eq:next_order_expansion}
+  \frac{\hat{x}^{2}\mu^{2}-km_{k}}{6m^{2}_{k}}t^{3} \dot{y}_{k}(0),
 \end{equation}
-where \(m_{0}=m_{\text{eff}}\) and \(m_{k\neq 0}=m\).  Therefore we can expect that for \(\hat{x}^{2}\mu^{2} \gg k m_{\text{eff}}\) the \(k=0\) mode remains strongly favored. Conversely, if \(\mu\) or \(\hat{x}\) is to small, we can expect the \(k=0\) mode to have to compete with the other modes.
-Extrapolating this argument provides a heuristic explanation of why the \(k=0\) mode is preferred and the oscillators synchronize.
+where \(m_{0}=m_{\text{eff}}\) and \(m_{k\neq 0}=m\). Therefore, we can expect that for \(\hat{x}^{2}\mu^{2} \gg k m_{\text{eff}}\) the \(k=0\) mode remains strongly favored. Conversely, if \(\mu\) or \(\hat{x}\) is too small, we can expect the \(k=0\) mode to compete with the other modes.
+An extrapolation of this argument provides a heuristic explanation of why the \(k=0\) mode is preferred and the oscillators synchronize.
 
-For negligible damping and setting \(y_{k\neq0}=0\) the equation of motion for \(y_{0}\)  from \cref{eq:7} then becomes
+For negligible damping and setting \(y_{k\neq0}=0\), the equation of motion for \(y_{0}\) from \cref{eq:eom_fourier_modes} then becomes:
 \begin{equation}
-  \label{eq:14}
+  \label{eq:vanderpol_y0}
   \ddot{y}_{0} = -\frac{k}{m_{\text{eff}}}y_{0} + \frac{{\mu}}{m_{\text{eff}}}\bqty{\hat{x}^{2}- y_{0}^{2}}\dot{y}_{0}
 \end{equation}
 which is a single van der Pol oscillator~\cite{Strogatz2018}.
-The van der Pol oscillator has a stable limit cycle for all parameter values (although it may be reached more slowly for some regimes).
-Mapping to the standard dimensionless form of the equation we have\vale{}{I should probably make all equations dimensionless.}
+The van der Pol oscillator has a stable limit cycle for all parameter values (although it may be reached more slowly in some regimes).
+Mapping to the standard dimensionless form, we obtain:
 \begin{equation}
-  \label{eq:16}
+  \label{eq:vanderpol_dimensionless}
   \ddot{\chi} = -\chi + \tilde{\mu} \pqty{1-\chi^{2}}\dot{\chi},
 \end{equation}
 where we transformed \(t\to \tau = \omega_{0}t\) (with \(\omega_{0}=\sqrt{ k /m_{\text{eff}}}\)), \(y_{0}(t)\to \hat{x} \chi(\tau)\), and
 \begin{equation}
-  \label{eq:2}
-  \tilde{\mu} =\frac{\mu \hat{x}^{2}}{m_{\text{eff}} \omega_{0}} = \frac{\mu\hat{x}^{2}}{\sqrt{km_{\text{eff}}}} .
+  \label{eq:tilde_mu_def}
+  \tilde{\mu} =\frac{\mu \hat{x}^{2}}{m_{\text{eff}} \omega_{0}} = \frac{\mu\hat{x}^{2}}{\sqrt{km_{\text{eff}}}}.
 \end{equation}
 
-For \(\tilde{\mu}\ll1\) the approximate solution of \cref{eq:12} is~\cite{Strogatz2018}
+For \(\tilde{\mu}\ll1\), the approximate solution of \cref{eq:vanderpol_dimensionless} is~\cite{Strogatz2018}
 \begin{equation}
-  \label{eq:15}
+  \label{eq:approx_sol_small_mu}
   y_{0}(t) \approx 2 \hat{x} \sin(\omega_{0}t).
 \end{equation}
-For large \({\mu} / ({m_{\text{eff}}}\omega_{0}) \) the limit cycle that is reached reached into on time scales of order \({1} / {\tilde{\mu} \omega_{0}}\) still has the approximate amplitude \(2\hat{x}\) but with a non-sinusoidal shape a period of
+For large \(\tilde{\mu}\), the limit cycle—which is reached on time scales of order \(1 / (\tilde{\mu} \omega_{0})\)—still has an approximate amplitude of \(2\hat{x}\), but with a non-sinusoidal shape and a period of
 \begin{equation}
-  \label{eq:17}
+  \label{eq:limit_cycle_period}
   T = \frac{\tilde{\mu}}{\omega_{0}} = \frac{\mu\hat{x}^{2}}{k}.
 \end{equation}
 
-However, this regime is characterized by long dwell times at maximum (minimum) elongation and rapid transitions which does not resemble the movement of a metronome.
-The mean square displacement of \(y_{0}\) ranges between the two extremes at \(\tilde{\mu} \ll 1\) and \(\tilde{\mu}\)
+However, this regime is characterized by long dwell times at maximum (minimum) elongation and rapid transitions, which do not resemble the movement of a metronome.
+The mean square displacement of \(y_{0}\) ranges between the two extremes at \(\tilde{\mu} \ll 1\) and \(\tilde{\mu} \gg 1\):
 \begin{equation}
-  \label{eq:18}
+  \label{eq:msd_bounds}
   2\hat{x}^{2}\lesssim \ev{y_{0}^{2}} \lesssim 4\hat{x}^{2}.
 \end{equation}
 
-To probe the stability of the synchronized mode \(y_{k}\) add a small perturbation \(y_{k\neq0} = \delta y\) with \(\delta y(0) \ll \max_{t} \abs{y_{0}(t) \approx 2x}\).
-We now assume that the limit-cycle period of \(y_{0}\) is sufficiently short compared so that. Then, we can drop zero-mean fast-oscillating proportional to \(y_{0}(t)\) and \(y(t)\) and find from \cref{eq:7}
+To probe the stability of the synchronized mode, we add a small perturbation \(y_{k\neq0} = \delta y\) with \(\delta y(0) \ll \max_{t} \abs{y_{0}(t)} \approx 2\hat{x}\).
+We now assume that the limit-cycle period of \(y_{0}\) is sufficiently short. Then, we can drop zero-mean, fast-oscillating terms proportional to \(y_{0}(t)\) and \(y(t)\) and find from \cref{eq:eom_fourier_modes}:
 \begin{equation}
-  \label{eq:12}
+  \label{eq:perturbation_eom}
   \delta\ddot{y}
-  \approx-\frac{k}{m} y +\mu \bqty{\hat{x}^{2} - \Bqty{3+(N-3)N}y^{2} - \ev{y_{0}^{2}} }\delta\dot{y}
+  \approx-\frac{k}{m} \delta y +\mu \bqty{\hat{x}^{2} - \Bqty{3+(N-3)N} (\delta y)^{2} - \ev{y_{0}^{2}} }\delta\dot{y}
 \end{equation}
-The coefficient of the drive term is negative thus induces damping and stabilizes the \(y_{0}\) mode for
+The coefficient of the drive term is negative and thus induces damping and stabilizes the \(y_{0}\) mode for:
 \begin{equation}
-  \label{eq:13}
-  \hat{x}^{2} < \bqty{3+(N-3)N} y^{2} +\ev{y_{0}^{2}}.
+  \label{eq:stability_condition}
+  \hat{x}^{2} < \bqty{3+(N-3)N} (\delta y)^{2} +\ev{y_{0}^{2}}.
 \end{equation}
-This condition is fulfilled either if \(N\) is sufficiently large, or \(y_0\) has successfully locked into its limit cycle (see \cref{eq:17}).
+This condition is fulfilled either if \(N\) is sufficiently large or \(y_0\) has successfully locked into its limit cycle (see \cref{eq:msd_bounds}).
 
-I suspect therefore the criteria for a stable synchronization of metronomes to be:
+I therefore suspect the criteria for a stable synchronization of metronomes to be:
 \begin{enumerate}
   \item small tray mass \(m_{t}\ll m N\) and \vale{low friction}{This will have to be examined further... i already have the idea of approximating \(\dot{x}_{t}\propto-\dot{y_{0}}\). damping then leads to an effective reduction in \(\hat{x}\) and thus eventually to a breakdown of the assumptions}
-  \item \(\delta y \ll \hat{x}\): in order that the approximation works
+  \item \(\delta y \ll \hat{x}\): in order for the approximation to work
   \item \(\tilde{\mu}\):
     \begin{itemize}
-      \item too large values: non-metronome like movement
-      \item too small values: slow damping of perturbations (\cref{eq:12}) and slow promotion of \(y_{0}\) mode (see \cref{eq:10})
+      \item too large values: non-metronome-like movement
+      \item too small values: slow damping of perturbations (\cref{eq:perturbation_eom}) and slow promotion of \(y_{0}\) mode (see \cref{eq:mode_ratio})
     \end{itemize}
 \end{enumerate}
 
