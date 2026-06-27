@@ -1,0 +1,42 @@
+name: Compile LaTeX and Release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: index.tex
+
+      - name: Prepare PDF for Release
+        run: |
+          cp output/index.pdf ./fun-with-metronomes.pdf
+
+      - name: Upload PDF to Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Latest Compiled PDF"
+          body: "This is a rolling release containing the latest successfully compiled PDF of the writeup."
+          draft: false
+          prerelease: true
+          files: ./fun-with-metronomes.pdf
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
