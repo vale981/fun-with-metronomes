@@ -158,7 +158,7 @@ The resulting equations of motion with the \emph{ad hoc} damping and driving ter
 \begin{align}
   \label{eq:eom_tray}
   \ddot{x}_{t} + \frac{m}{M} \sum_{n}\ddot{x}_{n}&=  \color{gray}{- \frac{\Gamma}{m_{t}} \dot{x}}\\
-  \label{eq:eom_oscillator}\ddot{x}_{n}+\ddot{x}_{t} &= -\frac{k}{m} x_{n} +\color{gray}{\mu \pqty{\hat{x}^{2}-x_{n}^{2}}\dot{x}_{n}},
+  \label{eq:eom_oscillator}\ddot{x}_{n}+\ddot{x}_{t} &= -\frac{k}{m} x_{n} +\color{gray}{\frac{\mu}{\hat{x}} \pqty{\hat{x}^{2}-x_{n}^{2}}\dot{x}_{n}},
 \end{align}
 where \(M= m_{t}+N m\) is the total mass of the system and \(\Gamma\) is the friction coefficient of the tray wheels.
 In \cref{eq:eom_oscillator}, we also added a van der Pol oscillator-inspired driving term, where \(\mu\) is the drive strength and \(\hat{x}\) is the ``target amplitude''. Intuitively, the drive tries to keep the maximal oscillator amplitude (and thus its energy) constant, just as the wound spring in a metronome does\vale{}{Not sure if this is the best model... but including also the kinetic energy in the drive term would be pretty rough.}.
@@ -174,7 +174,7 @@ In this ``momentum'' basis:
 \begin{align}
   \label{eq:eom_tray_fourier}
   \ddot{x}_{t} + \frac{m N}{M} \ddot{y}_{0}&=  {- \frac{\Gamma}{m_{t}} \dot{x}_{t}}\\
-  \label{eq:eom_fourier_modes}\ddot{y}_{k}+\delta_{k,0}\ddot{x}_{t} &= -\frac{k}{m} y_{k} +{\frac{\mu}{m} \pqty{\hat{x}^{2}\dot{y}_{k}-\sum_{pq}y_{p}y_{q}\dot{y}_{k-(p+q)}}}.
+  \label{eq:eom_fourier_modes}\ddot{y}_{k}+\delta_{k,0}\ddot{x}_{t} &= -\frac{k}{m} y_{k} +{\frac{\mu}{\hat{x}^{2}m} \pqty{\hat{x}^{2}\dot{y}_{k}-\sum_{pq}y_{p}y_{q}\dot{y}_{k-(p+q)}}}.
 \end{align}
 Although the drive term has been greatly complicated, it is now clear that only the common \(y_{0}\) mode couples to the movement of the tray. Setting \(\Gamma=m_{t}=0\), we have
 \begin{equation}
@@ -186,27 +186,27 @@ Lo and behold, the \(y_{0}\) mode behaves like an oscillator with an effectively
 Initializing the system with \(x_{t}=y_{k}=0\) and random nudges \(\dot{y}_{k}\neq 0\), and assuming that \(\Gamma\) is sufficiently small, we see that for short times where \(y_{k}\approx 0\) we can neglect the quadratic terms in the drive to arrive at:
 \begin{align}
   \label{eq:linearized_eom}
-  \ddot{y}_{0} &= -\frac{k}{m_{\text{eff}}}y_{0} + \frac{\mu}{m_{\text{eff}}}\hat{x}^{2} \dot{y}_{0}\\
-  \ddot{y}_{k\neq 0} &= -\frac{k}{m} y_{k} + \frac{\mu}{m}\hat{x}^{2} \dot{y}_{0}
+  \ddot{y}_{0} &= -\frac{k}{m_{\text{eff}}}y_{0} + \frac{\mu}{m_{\text{eff}}}\dot{y}_{0}\\
+  \ddot{y}_{k\neq 0} &= -\frac{k}{m} y_{k} + \frac{\mu}{m} \dot{y}_{0}
 \end{align}
 For short times up to order \(t^{2}\) and for \(\dot{y}_{0}(0)\neq 0\), we then have
 \begin{equation}
   \label{eq:mode_ratio}
   \frac{{y_{0}(t)}}{y_{k\neq 0}(t)} =
-  \frac{m}{m_{\text{eff}}}\frac{{\dot{y}_{0}(0)}}{{\dot{y}_{k}(0)}} \frac{2m_{\text{eff}} +\mu\hat{x}^{2}t }{2m +\mu\hat{x}^{2}t } \overset{t\gtrsim \frac{2m}{\mu \hat{x}^{2}}}{\gg} 1.
+  \frac{m}{m_{\text{eff}}}\frac{{\dot{y}_{0}(0)}}{{\dot{y}_{k}(0)}} \frac{2m_{\text{eff}} +\mu t }{2m +\mu t } \overset{t\gtrsim \frac{2m}{\mu \hat{x}^{2}}}{\gg} 1.
 \end{equation}
 Note that the next term in the short-time expansion of \(y_{k}(t)\) is
 \begin{equation}
   \label{eq:next_order_expansion}
-  \frac{\hat{x}^{2}\mu^{2}-km_{k}}{6m^{2}_{k}}t^{3} \dot{y}_{k}(0),
+  \frac{\mu^{2}-km_{k}}{6m^{2}_{k}}t^{3} \dot{y}_{k}(0),
 \end{equation}
-where \(m_{0}=m_{\text{eff}}\) and \(m_{k\neq 0}=m\). Therefore, we can expect that for \(\hat{x}^{2}\mu^{2} \gg k m_{\text{eff}}\) the \(k=0\) mode remains strongly favored. Conversely, if \(\mu\) or \(\hat{x}\) is too small, we can expect the \(k=0\) mode to compete with the other modes.
+where \(m_{0}=m_{\text{eff}}\) and \(m_{k\neq 0}=m\). Therefore, we can expect that for \(\mu^{2} \gg k m_{\text{eff}}\) the \(k=0\) mode remains strongly favored. Conversely, if \(\mu\) is too small, we can expect the \(k=0\) mode to compete with the other modes.
 An extrapolation of this argument provides a heuristic explanation of why the \(k=0\) mode is preferred and the oscillators synchronize.
 
 For negligible damping and setting \(y_{k\neq0}=0\), the equation of motion for \(y_{0}\) from \cref{eq:eom_fourier_modes} then becomes:
 \begin{equation}
   \label{eq:vanderpol_y0}
-  \ddot{y}_{0} = -\frac{k}{m_{\text{eff}}}y_{0} + \frac{{\mu}}{m_{\text{eff}}}\bqty{\hat{x}^{2}- y_{0}^{2}}\dot{y}_{0}
+  \ddot{y}_{0} = -\frac{k}{m_{\text{eff}}}y_{0} + \frac{{\mu}}{\hat{x}^{2} m_{\text{eff}}}\bqty{\hat{x}^{2}- y_{0}^{2}}\dot{y}_{0}
 \end{equation}
 which is a single van der Pol oscillator~\cite{Strogatz2018}.
 The van der Pol oscillator has a stable limit cycle for all parameter values (although it may be reached more slowly in some regimes).
@@ -218,7 +218,7 @@ Mapping to the standard dimensionless form, we obtain:
 where we transformed \(t\to \tau = \omega_{0}t\) (with \(\omega_{0}=\sqrt{ k /m_{\text{eff}}}\)), \(y_{0}(t)\to \hat{x} \chi(\tau)\), and
 \begin{equation}
   \label{eq:tilde_mu_def}
-  \tilde{\mu} =\frac{\mu \hat{x}^{2}}{m_{\text{eff}} \omega_{0}} = \frac{\mu\hat{x}^{2}}{\sqrt{km_{\text{eff}}}}.
+  \tilde{\mu} =\frac{\mu}{m_{\text{eff}} \omega_{0}} = \frac{\mu}{\sqrt{km_{\text{eff}}}}.
 \end{equation}
 
 For \(\tilde{\mu}\ll1\), the approximate solution of \cref{eq:vanderpol_dimensionless} is~\cite{Strogatz2018}
@@ -229,7 +229,7 @@ For \(\tilde{\mu}\ll1\), the approximate solution of \cref{eq:vanderpol_dimensio
 For large \(\tilde{\mu}\), the limit cycle—which is reached on time scales of order \(1 / (\tilde{\mu} \omega_{0})\)—still has an approximate amplitude of \(2\hat{x}\), but with a non-sinusoidal shape and a period of
 \begin{equation}
   \label{eq:limit_cycle_period}
-  T = \frac{\tilde{\mu}}{\omega_{0}} = \frac{\mu\hat{x}^{2}}{k}.
+  T = \frac{\tilde{\mu}}{\omega_{0}} = \frac{\mu}{k}.
 \end{equation}
 
 However, this regime is characterized by long dwell times at maximum (minimum) elongation and rapid transitions, which do not resemble the movement of a metronome.
@@ -244,7 +244,7 @@ We now assume that the limit-cycle period of \(y_{0}\) is sufficiently short. Th
 \begin{equation}
   \label{eq:perturbation_eom}
   \delta\ddot{y}
-  \approx-\frac{k}{m} \delta y +\mu \bqty{\hat{x}^{2} - \Bqty{3+(N-3)N} (\delta y)^{2} - \ev{y_{0}^{2}} }\delta\dot{y}
+  \approx-\frac{k}{m} \delta y +\frac{\mu}{\hat{x}^{2}} \bqty{\hat{x}^{2} - \Bqty{3+(N-3)N} (\delta y)^{2} - \ev{y_{0}^{2}} }\delta\dot{y}
 \end{equation}
 The coefficient of the drive term is negative and thus induces damping and stabilizes the \(y_{0}\) mode for:
 \begin{equation}
