@@ -181,7 +181,7 @@ Albeit the drive term has been much complicated it is now clear that only the co
   \label{eq:8}
   m {\pqty{\ddot{y}_{0}-\ddot{x_{t}}}} = \underbrace{m \pqty{1 - \frac{mN}{m_{t} + mN}}}_{m_{\text{eff}}}\ddot{y}_{0}=-k y_{k}.
 \end{equation}
-Low and behold, the \(y_{0}\) mode behaves like an oscillator with an effectively reduced mass. For \(m N \gg m_{t}\) this mass becomes very small \(m_{\text{eff}} \ll m\) and we can expect this mode to react to the drive term more quickly than the other momentum modes. For finite damping \(\Gamma >0\) the tray acceleration \(\ddot{x}_{t}\) will lag behind \(-\ddot{y}_{0}\) reducing the effective mass-reduction and leading to energy loss out of the \(y_{0}\) mode. Thus  without a drive, the \(y_{0}\) mode will always tend to zero at large times while the other modes persist if initially excited.
+Low and behold, the \(y_{0}\) mode behaves like an oscillator with an effectively reduced mass. For \(m N \gg m_{t}\) this mass becomes very small \(m_{\text{eff}} \ll m\) and we can expect this mode to react to the drive term more quickly than the other momentum modes. For finite damping \(\Gamma >0\) will lead to loss out of the \(y_{0}\) mode. Thus  without a drive, the \(y_{0}\) mode will always tend to zero at large times while the other modes persist if initially excited.
 
 Initializing the system with \(x_{t}=y_{k}=0\) and random nudges \(\dot{y}_{k}\neq 0\) and assuming that \(\Gamma\) is sufficiently small we see that for short times where \(y_{k}\approx 0\) we can neglect the quadratic terms in the drive to arrive at
 \begin{align}
@@ -219,7 +219,7 @@ Mapping to the standard dimensionless form of the equation we have\vale{}{I shou
 where we transformed \(t\to \tau = \omega_{0}t\) (with \(\omega_{0}=\sqrt{ k /m_{\text{eff}}}\)), \(y_{0}(t)\to \hat{x} \chi(\tau)\), and
 \begin{equation}
   \label{eq:2}
-  \tilde{\mu} =\frac{\mu \hat{x}^{2}}{m \omega_{0}} = \frac{\mu\hat{x}^{2}}{\sqrt{km}} .
+  \tilde{\mu} =\frac{\mu \hat{x}^{2}}{m_{\text{eff}} \omega_{0}} = \frac{\mu\hat{x}^{2}}{\sqrt{km_{\text{eff}}}} .
 \end{equation}
 
 For \(\tilde{\mu}\ll1\) the approximate solution of \cref{eq:12} is~\cite{Strogatz2018}
@@ -256,7 +256,7 @@ This condition is fulfilled either if \(N\) is sufficiently large, or \(y_0\) ha
 
 I suspect therefore the criteria for a stable synchronization of metronomes to be:
 \begin{enumerate}
-  \item small tray mass \(m_{t}\ll m N\) and low friction
+  \item small tray mass \(m_{t}\ll m N\) and \vale{low friction}{This will have to be examined further... i already have the idea of approximating \(\dot{x}_{t}\propto-\dot{y_{0}}\). damping then leads to an effective reduction in \(\hat{x}\) and thus eventually to a breakdown of the assumptions}
   \item \(\delta y \ll \hat{x}\): in order that the approximation works
   \item \(\tilde{\mu}\):
     \begin{itemize}
@@ -266,6 +266,7 @@ I suspect therefore the criteria for a stable synchronization of metronomes to b
 \end{enumerate}
 
 Conversely, the synchronization phenomenon can be destroyed by having a heavy tray and large friction.
+
 \clearpage
 \bibliography{references}
 \end{document}
